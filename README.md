@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="web/icons/Icon-192.png" alt="Xeboki Ordering App" width="80" />
+  <img src="assets/images/xe_logo.svg" alt="Xeboki" width="120" />
 </p>
 
 <h1 align="center">Xeboki Ordering App</h1>
