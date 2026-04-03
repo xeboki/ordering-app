@@ -1,0 +1,72 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+.pub-cache/
+.pub/
+*.dart.js
+*.js.deps
+*.js.map
+*.info.json
+doc/api/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Secrets — never commit these
+.dart_defines.json
+.env
+*.env.local
+*.env.production
+
+# Generated files (rebuild with `flutter pub run build_runner build`)
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# iOS
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/flutter_export_environment.sh
+ios/Pods/
+ios/.symlinks/
+ios/Runner.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Android
+android/.gradle/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/key.properties
+android/*.jks
+android/*.keystore
+*.apk
+*.aab
+
+# macOS
+macos/Pods/
+macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Web
+lib/generated_plugin_registrant.dart
+
+# IntelliJ / Android Studio
+*.iml
+.idea/
+.idea/modules.xml
+.idea/workspace.xml
+*.ipr
+
+# VS Code
+.vscode/settings.json
+# Keep .vscode/launch.json (committed — references .dart_defines.json, not secrets)
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+lcov.info

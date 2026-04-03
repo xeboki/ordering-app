@@ -1,0 +1,5 @@
+{
+  "XEBOKI_API_KEY": "xbk_live_YOUR_KEY_HERE",
+  "XEBOKI_LOCATION_ID": "YOUR_LOCATION_ID_HERE",
+  "XEBOKI_ENV": "production"
+}

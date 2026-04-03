@@ -1,0 +1,87 @@
+name: xeboki_ordering
+description: White-label ordering app powered by Xeboki POS. Fork, brand, deploy.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Xeboki SDK
+  xeboki:
+    git:
+      url: https://github.com/xeboki/sdk-dart
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+  hooks_riverpod: ^2.6.1
+  flutter_hooks: ^0.20.5
+
+  # Navigation
+  go_router: ^14.6.2
+
+  # Models
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Storage
+  shared_preferences: ^2.3.3
+  flutter_secure_storage: ^9.2.2
+
+  # UI
+  google_fonts: ^6.2.1
+  cached_network_image: ^3.4.1
+  flutter_svg: ^2.0.10+1
+  shimmer: ^3.0.0
+  flutter_animate: ^4.5.0
+  gap: ^3.0.1
+
+  # Firebase (Auth + Firestore streaming + FCM — runtime-initialised, no google-services.json)
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+  firebase_messaging: ^15.0.0
+
+  # Payments
+  flutter_stripe: ^10.1.1
+
+  # HTTP
+  http: ^1.2.2
+
+  # Utilities
+  intl: ^0.20.2
+  uuid: ^4.5.1
+  url_launcher: ^6.3.1
+  package_info_plus: ^8.1.1
+  connectivity_plus: ^6.1.0
+  path_provider: ^2.1.5
+
+  # Maps (OpenStreetMap — no API key needed, works for all merchants)
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.14
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  riverpod_generator: ^2.6.1
+  riverpod_lint: ^2.6.1
+  custom_lint: ^0.7.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/brand.json
+    - assets/images/
+

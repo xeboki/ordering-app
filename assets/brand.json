@@ -1,0 +1,91 @@
+{
+  "_comment": "Edit this file to brand your ordering app. Rebuild after changes.",
+
+  "app_name": "My Store",
+  "tagline": "Fresh. Fast. Yours.",
+  "business_type": "auto",
+
+  "colors": {
+    "primary": "#1A1A2E",
+    "secondary": "#E94560",
+    "surface": "#FFFFFF",
+    "background": "#F8F9FA",
+    "on_primary": "#FFFFFF",
+    "on_secondary": "#FFFFFF",
+    "on_surface": "#1A1A2E",
+    "success": "#27AE60",
+    "warning": "#F39C12",
+    "error": "#E74C3C"
+  },
+
+  "typography": {
+    "font_family": "Inter",
+    "scale": 1.0
+  },
+
+  "logo": {
+    "asset": "assets/images/logo.png",
+    "width": 120.0,
+    "height": 40.0,
+    "use_text_fallback": true
+  },
+
+  "splash": {
+    "background_color": "#1A1A2E",
+    "logo_asset": "assets/images/logo.png",
+    "show_tagline": true
+  },
+
+  "store": {
+    "currency_symbol": "$",
+    "currency_code": "USD",
+    "locale": "en_US",
+    "timezone": "UTC",
+    "tax_label": "Tax",
+    "support_email": "support@mystore.com",
+    "support_phone": "",
+    "address": "",
+    "website": ""
+  },
+
+  "features": {
+    "customer_auth": true,
+    "loyalty": true,
+    "discount_codes": true,
+    "order_scheduling": false,
+    "table_ordering": "auto",
+    "appointments": "auto",
+    "dark_mode": true,
+    "reviews": false,
+    "stripe_payments": false,
+    "apple_pay": false,
+    "google_pay": false,
+    "tipping": false,
+    "firebase_auth": false,
+    "meal_deals": "auto"
+  },
+
+  "checkout": {
+    "default_order_type": "pickup",
+    "allowed_order_types": ["pickup", "delivery", "dine_in", "takeaway"],
+    "payment_methods": ["cash", "card", "gift_card"],
+    "require_customer_for_dine_in": false,
+    "notes_placeholder": "Any special instructions?",
+    "delivery_note": "Enter your delivery address in the notes field.",
+    "stripe_publishable_key": "",
+    "stripe_connected_account_id": "",
+    "minimum_spend": 0.0,
+    "tip_presets": [10, 15, 20],
+    "default_delivery_fee": 0.0,
+    "free_delivery_threshold": 0.0,
+    "dine_in_discount_pct": 0.0,
+    "collection_discount_pct": 0.0
+  },
+
+  "social": {
+    "instagram": "",
+    "facebook": "",
+    "twitter": "",
+    "whatsapp": ""
+  }
+}
