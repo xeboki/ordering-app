@@ -1,11 +1,11 @@
 {
-    "name": "xeboki_ordering",
-    "short_name": "xeboki_ordering",
+    "name": "Xeboki Ordering",
+    "short_name": "Xeboki",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#1A1A2E",
+    "theme_color": "#4F6AF6",
+    "description": "Order online from your favourite Xeboki-powered store.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
