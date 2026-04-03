@@ -1,0 +1,166 @@
+{
+  "_docs": "Full reference for assets/brand.json. Copy, rename to brand.json, and edit. All fields are optional — defaults shown here.",
+
+  "app_name": "My Store",
+  "tagline": "Fresh. Fast. Yours.",
+
+  "business_type": "auto",
+  "_business_type_options": [
+    "auto         — infer UI/features from context",
+    "restaurant   — full dine-in, table management",
+    "bar          — dine-in, short menu, tabs",
+    "qsr          — quick service / counter service",
+    "coffeeshop   — coffee, grab & go",
+    "bakery       — bakery / patisserie",
+    "cafe         — casual café",
+    "fastfood     — fast food chain",
+    "pizza        — pizza / delivery-first",
+    "foodtruck    — food truck / pop-up",
+    "retail       — general retail / shop",
+    "salon        — hair & beauty salon",
+    "gym          — fitness / gym",
+    "service      — general service business"
+  ],
+
+  "colors": {
+    "_docs": "All values are hex strings: #RRGGBB or #AARRGGBB",
+    "primary":    "#1A1A2E",
+    "secondary":  "#E94560",
+    "surface":    "#FFFFFF",
+    "background": "#F8F9FA",
+    "on_primary":    "#FFFFFF",
+    "on_secondary":  "#FFFFFF",
+    "on_surface":    "#1A1A2E",
+    "success": "#27AE60",
+    "warning": "#F39C12",
+    "error":   "#E74C3C"
+  },
+
+  "typography": {
+    "_docs": "font_family is any Google Fonts name. scale adjusts the entire type scale (0.9 = smaller, 1.1 = larger).",
+    "font_family": "Inter",
+    "scale": 1.0
+  },
+
+  "logo": {
+    "_docs": "Place your logo PNG/SVG at the asset path. use_text_fallback shows app_name as text if image fails to load.",
+    "asset": "assets/images/logo.png",
+    "width": 120.0,
+    "height": 40.0,
+    "use_text_fallback": true
+  },
+
+  "splash": {
+    "background_color": "#1A1A2E",
+    "logo_asset": "assets/images/logo.png",
+    "show_tagline": true
+  },
+
+  "store": {
+    "_docs": "Currency and locale affect number formatting throughout the app.",
+    "currency_symbol": "$",
+    "currency_code":   "USD",
+    "locale":   "en_US",
+    "timezone": "America/New_York",
+    "tax_label": "Tax",
+    "support_email": "support@yourdomain.com",
+    "support_phone": "+1 555 000 0000",
+    "address": "123 Main St, City, State 12345",
+    "website": "https://www.yourdomain.com"
+  },
+
+  "features": {
+    "_docs": "Set boolean fields to true/false. Three-state fields accept 'auto', 'true', or 'false'.",
+
+    "customer_auth":     true,
+    "_customer_auth":    "Enable customer login/register. Disable for guest-only ordering.",
+
+    "firebase_auth":     false,
+    "_firebase_auth":    "Use Firebase Auth (email+password) backed by your Pro Firebase project. Requires an active Xeboki Pro subscription with Firebase enabled. Leave false for REST-based auth.",
+
+    "loyalty":           true,
+    "_loyalty":          "Show loyalty points in customer account and checkout.",
+
+    "discount_codes":    true,
+    "_discount_codes":   "Show promo code field at checkout.",
+
+    "order_scheduling":  false,
+    "_order_scheduling": "Allow customers to schedule orders for a future time.",
+
+    "table_ordering":    "auto",
+    "_table_ordering":   "'auto' = on for restaurant/bar/cafe, off otherwise. 'true'/'false' to override.",
+
+    "appointments":      "auto",
+    "_appointments":     "'auto' = on for salon/gym/service types, off otherwise.",
+
+    "meal_deals":        "auto",
+    "_meal_deals":       "'auto' = on for food businesses, off otherwise.",
+
+    "tipping":           false,
+    "_tipping":          "Show tip selector at checkout.",
+
+    "dark_mode":         true,
+    "_dark_mode":        "Allow customers to switch to dark theme.",
+
+    "reviews":           false,
+    "_reviews":          "Enable order/product reviews (coming soon).",
+
+    "stripe_payments":   false,
+    "_stripe_payments":  "Enable Stripe card payments. Set stripe_publishable_key in checkout section.",
+
+    "apple_pay":         false,
+    "_apple_pay":        "Show Apple Pay button (iOS only). Requires stripe_payments: true.",
+
+    "google_pay":        false,
+    "_google_pay":       "Show Google Pay button (Android only). Requires stripe_payments: true."
+  },
+
+  "checkout": {
+    "default_order_type": "pickup",
+    "_default_order_type": "One of: pickup, delivery, dine_in, takeaway",
+
+    "allowed_order_types": ["pickup", "delivery"],
+    "_allowed_order_types": "Subset of: pickup, delivery, dine_in, takeaway. Only listed types appear on the order-type selector.",
+
+    "payment_methods": ["cash", "card"],
+    "_payment_methods": "Subset of: cash, card, gift_card. Order determines display order in checkout.",
+
+    "require_customer_for_dine_in": false,
+    "_require_customer_for_dine_in": "Force customers to log in before placing a dine-in order.",
+
+    "notes_placeholder": "Any special instructions or allergies?",
+    "delivery_note": "We deliver within 5 miles. Enter your full address in the notes field.",
+
+    "stripe_publishable_key": "",
+    "_stripe_publishable_key": "Your Stripe publishable key (pk_live_... or pk_test_...). Never put your secret key here.",
+
+    "stripe_connected_account_id": "",
+    "_stripe_connected_account_id": "Stripe Connect account ID (acct_...) if using Xeboki Launchpad payment routing. Leave empty for direct charges.",
+
+    "minimum_spend": 0.0,
+    "_minimum_spend": "Minimum order total before checkout is allowed. 0 = no minimum.",
+
+    "tip_presets": [10, 15, 20],
+    "_tip_presets": "Tip percentage buttons shown to the customer. Requires tipping: true.",
+
+    "default_delivery_fee": 2.99,
+    "_default_delivery_fee": "Flat delivery fee when no zone pricing is configured in the POS. 0 = free.",
+
+    "free_delivery_threshold": 30.0,
+    "_free_delivery_threshold": "Orders at or above this total qualify for free delivery. 0 = always charge.",
+
+    "dine_in_discount_pct": 0.0,
+    "_dine_in_discount_pct": "Auto-applied discount % for dine-in orders (e.g. 10 for 10% off). 0 = none.",
+
+    "collection_discount_pct": 0.0,
+    "_collection_discount_pct": "Auto-applied discount % for pickup/collection orders. 0 = none."
+  },
+
+  "social": {
+    "_docs": "Full URLs. Leave empty to hide the social link.",
+    "instagram": "https://instagram.com/yourhandle",
+    "facebook":  "https://facebook.com/yourpage",
+    "twitter":   "https://twitter.com/yourhandle",
+    "whatsapp":  "https://wa.me/15550000000"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  // VS Code Flutter launch configurations for the Xeboki Ordering App.
+  //
+  // Prerequisites:
+  //   1. Run 'bash setup.sh' to create .dart_defines.json with your credentials.
+  //   2. Install the Flutter extension for VS Code.
+  //
+  // .dart_defines.json is gitignored — each developer must run setup.sh once.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Xeboki Ordering (dev)",
+      "request": "launch",
+      "type": "dart",
+      "toolArgs": [
+        "--dart-define-from-file=.dart_defines.json"
+      ],
+      "args": ["--enable-software-rendering"]
+    },
+    {
+      "name": "Xeboki Ordering (profile)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "toolArgs": [
+        "--dart-define-from-file=.dart_defines.json"
+      ]
+    },
+    {
+      "name": "Xeboki Ordering (release)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "toolArgs": [
+        "--dart-define-from-file=.dart_defines.json"
+      ]
+    },
+    {
+      "name": "Xeboki Ordering (web)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "toolArgs": [
+        "--dart-define-from-file=.dart_defines.json",
+        "--web-renderer=canvaskit"
+      ]
+    }
+  ]
+}
