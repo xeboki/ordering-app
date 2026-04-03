@@ -1,9 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:xeboki_ordering/core/types.dart';
+import 'package:xeboki_ordering/core/widgets/xeboki_logo_mark.dart';
 import 'package:xeboki_ordering/l10n/app_localizations.dart';
 import 'package:xeboki_ordering/providers/app_providers.dart';
 import 'package:xeboki_ordering/providers/auth_providers.dart';
@@ -113,17 +115,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset(
-                  splash.logoAsset,
-                  width: 120,
-                  height: 120,
-                  errorBuilder: (_, __, ___) => Text(
-                    brand.appName,
-                    style: theme.textTheme.displaySmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
+                _BrandLogo(
+                  asset: splash.logoAsset,
+                  size: 96,
+                  appName: brand.appName,
+                  theme: theme,
                 ),
                 if (splash.showTagline && brand.tagline.isNotEmpty) ...[
                   const SizedBox(height: 16),
@@ -150,6 +146,42 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           ),
         ),
       ),
+    );
+  }
+}
+
+// ── Blocking error screen ─────────────────────────────────────────────────────
+
+// ── Brand logo — SVG, PNG, or XebokiLogoMark fallback ────────────────────────
+
+class _BrandLogo extends StatelessWidget {
+  final String asset;
+  final double size;
+  final String appName;
+  final ThemeData theme;
+
+  const _BrandLogo({
+    required this.asset,
+    required this.size,
+    required this.appName,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (asset.endsWith('.svg')) {
+      return SvgPicture.asset(
+        asset,
+        width: size,
+        height: size,
+        placeholderBuilder: (_) => XebokiLogoMark(size: size),
+      );
+    }
+    return Image.asset(
+      asset,
+      width: size,
+      height: size,
+      errorBuilder: (_, __, ___) => XebokiLogoMark(size: size),
     );
   }
 }

@@ -24,15 +24,15 @@
   },
 
   "logo": {
-    "asset": "assets/images/logo.png",
-    "width": 120.0,
-    "height": 40.0,
-    "use_text_fallback": true
+    "asset": "assets/images/xe_logo.svg",
+    "width": 56.0,
+    "height": 56.0,
+    "use_text_fallback": false
   },
 
   "splash": {
     "background_color": "#1A1A2E",
-    "logo_asset": "assets/images/logo.png",
+    "logo_asset": "assets/images/xe_logo.svg",
     "show_tagline": true
   },
 
