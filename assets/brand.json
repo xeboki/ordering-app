@@ -25,8 +25,8 @@
 
   "logo": {
     "asset": "assets/images/xe_logo.svg",
-    "width": 56.0,
-    "height": 56.0,
+    "width": 90.0,
+    "height": 60.0,
     "use_text_fallback": false
   },
 
