@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xeboki_ordering/core/config/app_config.dart';
 import 'package:xeboki_ordering/core/config/brand_config.dart';
 import 'package:xeboki_ordering/core/types.dart';
@@ -59,6 +60,62 @@ final brandProvider = Provider<BrandConfig>((_) => BrandConfig.instance);
 final orderingClientProvider = Provider<OrderingClient>((_) {
   return OrderingClient(apiKey: AppConfig.apiKey);
 });
+
+// ── Location discovery ────────────────────────────────────────────────────────
+
+const _kSelectedLocationKey = 'xbk_selected_location_id';
+
+/// All ordering-enabled locations returned by the API after validation.
+final locationsProvider =
+    StateNotifierProvider<_LocationsNotifier, AsyncValue<List<StoreLocation>>>(
+  (ref) => _LocationsNotifier(ref.watch(orderingClientProvider)),
+);
+
+class _LocationsNotifier
+    extends StateNotifier<AsyncValue<List<StoreLocation>>> {
+  final OrderingClient client;
+  _LocationsNotifier(this.client) : super(const AsyncValue.loading());
+
+  Future<void> load() async {
+    state = const AsyncValue.loading();
+    try {
+      final locs = await client.listLocations();
+      state = AsyncValue.data(locs);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+}
+
+/// The currently active location ID — persisted across restarts.
+/// Null until locations are loaded; auto-selected when only one exists.
+final selectedLocationIdProvider =
+    StateNotifierProvider<_SelectedLocationNotifier, String?>(
+  (ref) => _SelectedLocationNotifier(),
+);
+
+class _SelectedLocationNotifier extends StateNotifier<String?> {
+  _SelectedLocationNotifier() : super(null) {
+    _restore();
+  }
+
+  Future<void> _restore() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getString(_kSelectedLocationKey);
+  }
+
+  Future<void> select(String locationId) async {
+    state = locationId;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kSelectedLocationKey, locationId);
+  }
+
+  Future<void> clear() async {
+    state = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kSelectedLocationKey);
+  }
+}
 
 // ── UI State ─────────────────────────────────────────────────────────────────
 

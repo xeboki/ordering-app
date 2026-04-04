@@ -611,15 +611,51 @@ class StripePaymentIntent {
         connectedAccountId = j['connected_account_id']?.toString();
 }
 
+// ── Store location ────────────────────────────────────────────────────────────
+
+class StoreLocation {
+  final String id;
+  final String name;
+  final String? address;
+  final String? phone;
+  final String? email;
+  final String? timezone;
+  final String? currency;
+  final bool isActive;
+
+  const StoreLocation({
+    required this.id,
+    required this.name,
+    this.address,
+    this.phone,
+    this.email,
+    this.timezone,
+    this.currency,
+    this.isActive = true,
+  });
+
+  factory StoreLocation.fromJson(Map<String, dynamic> j) => StoreLocation(
+        id: j['id']?.toString() ?? '',
+        name: j['name']?.toString() ?? '',
+        address: j['address']?.toString(),
+        phone: j['phone']?.toString(),
+        email: j['email']?.toString(),
+        timezone: j['timezone']?.toString(),
+        currency: j['currency']?.toString(),
+        isActive: j['is_active'] as bool? ?? true,
+      );
+}
+
 // ── Key validation ────────────────────────────────────────────────────────────
 
 enum KeyValidationStatus {
   valid,
-  invalidKey,         // 401 — key not found or revoked
-  noSubscription,     // 403 code: subscription_required
-  freePlanBlocked,    // 403 code: free_plan_not_supported
-  featureNotInPlan,   // 403 code: ordering_app_not_in_plan
-  networkError,       // connection failure
+  invalidKey,            // 401 — key not found or revoked
+  noSubscription,        // 403 code: subscription_required
+  freePlanBlocked,       // 403 code: free_plan_not_supported
+  featureNotInPlan,      // 403 code: ordering_app_not_in_plan
+  noOrderingLocations,   // subscription valid but no branch has ordering_enabled
+  networkError,          // connection failure
 }
 
 class KeyValidationResult {
@@ -938,6 +974,28 @@ class OrderingClient {
       'GET',
       '/v1/pos/validate',
       fromJson: (j) => KeyValidationResult.fromJson(j as Map<String, dynamic>),
+    );
+    _track(rl);
+    return data;
+  }
+
+  // ── Locations ───────────────────────────────────────────────────────────────
+
+  /// Returns all active store locations for this subscriber.
+  /// When the API key has a location restriction, only those locations are
+  /// returned by the gateway. If a single location is configured at build-time
+  /// via [AppConfig.locationId], call sites can skip this and use that ID.
+  Future<List<StoreLocation>> listLocations() async {
+    final (data, rl) = await _http.request(
+      'GET',
+      '/v1/pos/locations',
+      fromJson: (j) {
+        final list = (j['locations'] ?? (j is List ? j : [])) as List;
+        return list
+            .map((e) => StoreLocation.fromJson(e as Map<String, dynamic>))
+            .where((l) => l.isActive)
+            .toList();
+      },
     );
     _track(rl);
     return data;

@@ -57,7 +57,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       data: (status) {
         setState(() => _validationResult = status);
         if (status == KeyValidationStatus.valid) {
-          _navigateNext();
+          _loadLocations();
         }
       },
       loading: () {},
@@ -65,6 +65,31 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         setState(() => _validationResult = KeyValidationStatus.networkError);
       },
     );
+  }
+
+  Future<void> _loadLocations() async {
+    await ref.read(locationsProvider.notifier).load();
+
+    if (!mounted) return;
+
+    final locState = ref.read(locationsProvider);
+    locState.whenData((locations) {
+      if (locations.length == 1) {
+        // Single location — auto-select silently, no picker needed
+        ref.read(selectedLocationIdProvider.notifier).select(locations.first.id);
+        _navigateNext();
+      } else if (locations.isEmpty) {
+        // No ordering-enabled branches — treat as blocked
+        setState(() => _validationResult = KeyValidationStatus.noOrderingLocations);
+      } else {
+        // Multiple locations — show branch picker
+        context.go('/pick-location');
+      }
+    });
+
+    // If locations failed to load, proceed anyway (non-fatal — location filter
+    // just won't be applied; each screen passes locationId when available)
+    if (locState is AsyncError) _navigateNext();
   }
 
   void _navigateNext() {
@@ -438,6 +463,17 @@ class _BlockedScreen extends StatelessWidget {
           linkLabel: l10n.splashFeatureNotInPlanLink,
           hint: l10n.splashFeatureNotInPlanHint,
           canRetry: false,
+        );
+
+      case KeyValidationStatus.noOrderingLocations:
+        return _BlockedInfo(
+          icon: Icons.storefront_outlined,
+          iconColor: const Color(0xFFED8936),
+          title: 'Online Ordering Not Available',
+          message: 'No branches are currently set up for online ordering. '
+              'The store owner can enable it per branch in the Manager app.',
+          hint: '',
+          canRetry: true,
         );
 
       case KeyValidationStatus.networkError:

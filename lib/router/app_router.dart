@@ -13,6 +13,7 @@ import 'package:xeboki_ordering/features/offers/offers_screen.dart';
 import 'package:xeboki_ordering/features/order_tracking/order_tracking_screen.dart';
 import 'package:xeboki_ordering/features/orders/order_detail_screen.dart';
 import 'package:xeboki_ordering/features/orders/orders_screen.dart';
+import 'package:xeboki_ordering/features/location/location_picker_screen.dart';
 import 'package:xeboki_ordering/features/splash/splash_screen.dart';
 import 'package:xeboki_ordering/providers/auth_providers.dart';
 import 'package:xeboki_ordering/providers/app_providers.dart';
@@ -32,7 +33,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final loc = state.matchedLocation;
       final onAuthPage = loc == '/login' || loc == '/register';
-      final onSplash = loc == '/splash';
+      final onSplash = loc == '/splash' || loc == '/pick-location';
 
       if (onSplash) return null;
       if (requireAuth && !isLoggedIn && !isGuest && !onAuthPage) return '/login';
@@ -43,6 +44,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/splash',
         builder: (_, __) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/pick-location',
+        builder: (_, __) => const LocationPickerScreen(),
       ),
       GoRoute(
         path: '/login',
