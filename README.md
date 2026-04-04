@@ -97,7 +97,7 @@ bash scripts/build.sh ios
 
 ## Enable Ordering Per Branch
 
-In the **Xeboki Manager app**: go to **Locations → Edit branch → Online Ordering** and toggle it on for each branch that accepts online orders.
+In the **Xeboki POS Admin**: go to **Locations → Edit branch → Online Ordering** and toggle it on for each branch that accepts online orders.
 
 - **1 branch enabled** → app starts directly, no picker shown
 - **2+ branches enabled** → customer sees a branch picker screen on first launch
@@ -109,22 +109,18 @@ In the **Xeboki Manager app**: go to **Locations → Edit branch → Online Orde
 
 ## Configuration
 
-All branding and feature settings live in **`assets/brand.json`** — one file, no code changes needed.
+Visual branding lives in **`assets/brand.json`** — colours, font, logo, and feature toggles. That's all you set here.
+
+**Business type, currency, timezone, tax label, and store details are auto-detected from your Xeboki POS at runtime.** The app fetches them from `GET /v1/pos/store-config` on every launch using your API key — no duplication, always in sync with what's configured in the POS.
 
 ```json
 {
   "app_name": "My Store",
   "tagline": "Fresh. Fast. Yours.",
-  "business_type": "restaurant",
 
   "colors": {
     "primary": "#1A1A2E",
     "secondary": "#E94560"
-  },
-
-  "store": {
-    "currency_symbol": "$",
-    "currency_code": "USD"
   },
 
   "features": {
@@ -141,10 +137,6 @@ All branding and feature settings live in **`assets/brand.json`** — one file, 
 ```
 
 See [`assets/brand.example.json`](assets/brand.example.json) for every available field with documentation.
-
-### Business types
-
-`auto` · `restaurant` · `bar` · `qsr` · `coffeeshop` · `bakery` · `cafe` · `fastfood` · `pizza` · `foodtruck` · `retail` · `salon` · `gym` · `service`
 
 ---
 

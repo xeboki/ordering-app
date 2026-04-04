@@ -64,7 +64,7 @@ Your API key is specific to your subscription. Do not share it publicly — it c
 
 ### Enabling Ordering Per Branch
 
-Open the **Xeboki Manager app** → **Locations** → tap a branch → enable the **Online Ordering** toggle.
+Open **Xeboki POS Admin** → **Locations** → tap a branch → enable the **Online Ordering** toggle.
 
 | Enabled branches | What the app shows |
 |---|---|

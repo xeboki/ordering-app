@@ -1,9 +1,8 @@
 {
-  "_comment": "Edit this file to brand your ordering app. Rebuild after changes.",
+  "_comment": "Visual branding only — business type, name, currency, timezone, and tax label are auto-detected from your Xeboki POS at runtime.",
 
   "app_name": "My Store",
   "tagline": "Fresh. Fast. Yours.",
-  "business_type": "auto",
 
   "colors": {
     "primary": "#1A1A2E",
@@ -34,18 +33,6 @@
     "background_color": "#1A1A2E",
     "logo_asset": "assets/images/xe_logo.svg",
     "show_tagline": true
-  },
-
-  "store": {
-    "currency_symbol": "$",
-    "currency_code": "USD",
-    "locale": "en_US",
-    "timezone": "UTC",
-    "tax_label": "Tax",
-    "support_email": "support@mystore.com",
-    "support_phone": "",
-    "address": "",
-    "website": ""
   },
 
   "features": {

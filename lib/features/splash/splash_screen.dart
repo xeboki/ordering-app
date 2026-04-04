@@ -57,7 +57,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       data: (status) {
         setState(() => _validationResult = status);
         if (status == KeyValidationStatus.valid) {
-          _loadLocations();
+          _loadStoreConfig();
         }
       },
       loading: () {},
@@ -65,6 +65,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         setState(() => _validationResult = KeyValidationStatus.networkError);
       },
     );
+  }
+
+  Future<void> _loadStoreConfig() async {
+    // Non-fatal — brand.json fallbacks stay if this fails
+    await ref.read(storeConfigProvider.future).catchError((_) => null);
+    if (mounted) _loadLocations();
   }
 
   Future<void> _loadLocations() async {

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:xeboki_ordering/core/types.dart';
 
 /// Parsed representation of assets/brand.json.
 /// Loaded once at startup — immutable after that.
@@ -59,6 +60,39 @@ class BrandConfig {
     final json = jsonDecode(raw) as Map<String, dynamic>;
     _instance = BrandConfig._fromJson(json);
     return _instance!;
+  }
+
+  /// Merges auto-detected business config from the POS API into the loaded
+  /// brand config. API values take precedence over brand.json fallbacks —
+  /// the merchant configured them once in the POS setup wizard.
+  /// Non-null/non-empty API values overwrite; empty strings leave brand.json
+  /// values intact (e.g. a merchant who set a custom tagline keeps it).
+  static void applyStoreConfig(StoreConfig c) {
+    final b = _instance;
+    if (b == null) return;
+    _instance = BrandConfig(
+      appName:      c.businessName.isNotEmpty ? c.businessName : b.appName,
+      tagline:      b.tagline,
+      businessType: c.businessType.isNotEmpty ? c.businessType : b.businessType,
+      colors:       b.colors,
+      typography:   b.typography,
+      logo:         b.logo,
+      splash:       b.splash,
+      store: BrandStore(
+        currencySymbol: c.currencySymbol.isNotEmpty ? c.currencySymbol : b.store.currencySymbol,
+        currencyCode:   c.currencyCode.isNotEmpty   ? c.currencyCode   : b.store.currencyCode,
+        locale:         b.store.locale,
+        timezone:       c.timezone.isNotEmpty       ? c.timezone       : b.store.timezone,
+        taxLabel:       c.taxLabel.isNotEmpty        ? c.taxLabel       : b.store.taxLabel,
+        supportEmail:   c.supportEmail.isNotEmpty   ? c.supportEmail   : b.store.supportEmail,
+        supportPhone:   c.supportPhone.isNotEmpty   ? c.supportPhone   : b.store.supportPhone,
+        address:        b.store.address,
+        website:        c.website.isNotEmpty         ? c.website        : b.store.website,
+      ),
+      features:  b.features,
+      checkout:  b.checkout,
+      social:    b.social,
+    );
   }
 
   factory BrandConfig._fromJson(Map<String, dynamic> j) {
