@@ -611,6 +611,50 @@ class StripePaymentIntent {
         connectedAccountId = j['connected_account_id']?.toString();
 }
 
+// ── Store config (auto-detected from POS) ────────────────────────────────────
+
+/// Business configuration fetched from the merchant's POS at startup.
+/// These values override any fallbacks in brand.json — the merchant never
+/// needs to re-enter them in the ordering app.
+class StoreConfig {
+  final String businessType;
+  final String businessName;
+  final String currencyCode;
+  final String currencySymbol;
+  final String timezone;
+  final String taxLabel;
+  final double taxRate;
+  final String supportEmail;
+  final String supportPhone;
+  final String website;
+
+  const StoreConfig({
+    required this.businessType,
+    required this.businessName,
+    required this.currencyCode,
+    required this.currencySymbol,
+    required this.timezone,
+    required this.taxLabel,
+    required this.taxRate,
+    required this.supportEmail,
+    required this.supportPhone,
+    required this.website,
+  });
+
+  factory StoreConfig.fromJson(Map<String, dynamic> j) => StoreConfig(
+        businessType:   j['business_type']?.toString() ?? 'retail',
+        businessName:   j['business_name']?.toString() ?? '',
+        currencyCode:   j['currency_code']?.toString() ?? 'USD',
+        currencySymbol: j['currency_symbol']?.toString() ?? '\$',
+        timezone:       j['timezone']?.toString() ?? 'UTC',
+        taxLabel:       j['tax_label']?.toString() ?? 'Tax',
+        taxRate:        (j['tax_rate'] as num?)?.toDouble() ?? 0.0,
+        supportEmail:   j['support_email']?.toString() ?? '',
+        supportPhone:   j['support_phone']?.toString() ?? '',
+        website:        j['website']?.toString() ?? '',
+      );
+}
+
 // ── Store location ────────────────────────────────────────────────────────────
 
 class StoreLocation {
@@ -974,6 +1018,21 @@ class OrderingClient {
       'GET',
       '/v1/pos/validate',
       fromJson: (j) => KeyValidationResult.fromJson(j as Map<String, dynamic>),
+    );
+    _track(rl);
+    return data;
+  }
+
+  // ── Store config ────────────────────────────────────────────────────────────
+
+  /// Fetches merchant business config from the POS — business type, currency,
+  /// timezone, tax label, contact info. Called once at startup so the app
+  /// auto-configures without the merchant entering these values again.
+  Future<StoreConfig> fetchStoreConfig() async {
+    final (data, rl) = await _http.request(
+      'GET',
+      '/v1/pos/store-config',
+      fromJson: (j) => StoreConfig.fromJson(j as Map<String, dynamic>),
     );
     _track(rl);
     return data;

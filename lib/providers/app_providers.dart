@@ -51,6 +51,24 @@ final apiValidationProvider = StateNotifierProvider<_ApiValidationNotifier,
   return _ApiValidationNotifier(client);
 });
 
+// ── Store config (auto-detected from POS) ────────────────────────────────────
+
+/// Fetches business config from the POS API and merges it into BrandConfig.
+/// Called once after API key validation succeeds. Non-fatal on failure —
+/// brand.json fallbacks remain in effect.
+final storeConfigProvider =
+    FutureProvider.autoDispose<StoreConfig?>((ref) async {
+  final client = ref.watch(orderingClientProvider);
+  try {
+    final config = await client.fetchStoreConfig();
+    BrandConfig.applyStoreConfig(config);
+    return config;
+  } catch (_) {
+    // Non-fatal: brand.json fallbacks stay in effect
+    return null;
+  }
+});
+
 // ── Brand ────────────────────────────────────────────────────────────────────
 
 final brandProvider = Provider<BrandConfig>((_) => BrandConfig.instance);
