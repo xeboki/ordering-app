@@ -84,9 +84,13 @@ success "Working directory is correct"
 # ── Step 1: Xeboki Credentials ────────────────────────────────────────────────
 step "Step 1 / 5 — Xeboki Credentials"
 echo ""
-info "Find these in your Xeboki POS Dashboard → Settings → Ordering App."
+info "Get your API key from: account.xeboki.com → Developer → API Keys"
 info "A paid Xeboki POS subscription with Ordering App access is required."
 info "Free plan accounts will be blocked at app startup."
+echo ""
+info "No Location ID needed — the app discovers your ordering-enabled branches"
+info "automatically at runtime. Enable ordering per branch in the Manager app:"
+info "  Manager → Locations → Edit branch → Online Ordering toggle"
 echo ""
 
 while true; do
@@ -100,12 +104,6 @@ while true; do
   else
     break
   fi
-done
-
-while true; do
-  prompt LOCATION_ID "Location ID"
-  [ -n "$LOCATION_ID" ] && break
-  warn "Location ID is required."
 done
 
 # Read current brand.json values as defaults
@@ -347,9 +345,8 @@ success "assets/brand.json updated"
 python3 - <<PYEOF2
 import json
 d = {
-    "XEBOKI_API_KEY":    "$API_KEY",
-    "XEBOKI_LOCATION_ID": "$LOCATION_ID",
-    "XEBOKI_ENV":        "production"
+    "XEBOKI_API_KEY": "$API_KEY",
+    "XEBOKI_ENV":     "production"
 }
 with open('.dart_defines.json', 'w') as f:
     json.dump(d, f, indent=2)

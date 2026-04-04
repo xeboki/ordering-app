@@ -33,7 +33,7 @@ bash setup.sh
 ```
 
 The wizard asks for:
-- Your Xeboki API key and Location ID (from POS Dashboard → Settings → Ordering App)
+- Your Xeboki **API Key** (from account.xeboki.com → Developer → API Keys)
 - App name, tagline, business type
 - Brand colours and font
 - Currency and store info
@@ -54,13 +54,23 @@ bash scripts/build.sh ios
 
 ---
 
-## Getting Your Credentials
+## Getting Your API Key
 
-1. Log in to your Xeboki POS Dashboard
-2. Go to **Settings → Ordering App**
-3. Copy your **API Key** (`xbk_live_...`) and **Location ID**
+1. Log in to **account.xeboki.com → Developer → API Keys**
+2. Create a key with `pos:read` + `pos:write` scopes
+3. Copy your **API Key** (`xbk_live_...`)
 
 Your API key is specific to your subscription. Do not share it publicly — it controls access to your entire store catalog and order data.
+
+### Enabling Ordering Per Branch
+
+Open the **Xeboki Manager app** → **Locations** → tap a branch → enable the **Online Ordering** toggle.
+
+| Enabled branches | What the app shows |
+|---|---|
+| 1 | Starts directly — no picker, seamless |
+| 2 or more | Branch picker screen on first launch |
+| 0 | "Ordering not available" screen until you enable at least one |
 
 ---
 
@@ -72,9 +82,8 @@ Created by `setup.sh`. Never commit this file.
 
 ```json
 {
-  "XEBOKI_API_KEY":    "xbk_live_...",
-  "XEBOKI_LOCATION_ID": "your_location_id",
-  "XEBOKI_ENV":        "production"
+  "XEBOKI_API_KEY": "xbk_live_...",
+  "XEBOKI_ENV":     "production"
 }
 ```
 
@@ -330,8 +339,8 @@ flutter gen-l10n
 
 ## Troubleshooting
 
-### "XEBOKI_API_KEY and XEBOKI_LOCATION_ID are required"
-You're running without the dart-define flags. Use:
+### "XEBOKI_API_KEY is required"
+You're running without the dart-define flag. Use:
 ```bash
 flutter run --dart-define-from-file=.dart_defines.json
 ```

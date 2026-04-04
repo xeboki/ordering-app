@@ -65,7 +65,7 @@ bash setup.sh
 ```
 
 The wizard walks you through:
-- Pasting your **API Key** and **Location ID** from the POS Dashboard
+- Pasting your **API Key** from the Developer Portal
 - App name, tagline, business type
 - Brand colours and font family
 - Currency, tax label, and store info
@@ -87,11 +87,21 @@ bash scripts/build.sh ios
 
 ---
 
-## Get Your Credentials
+## Get Your API Key
 
-1. Log in to your **Xeboki POS Dashboard**
-2. Go to **Settings → Ordering App**
-3. Copy your **API Key** (`xbk_live_...`) and **Location ID**
+1. Log in to **[account.xeboki.com](https://account.xeboki.com) → Developer → API Keys**
+2. Create a key with `pos:read` + `pos:write` scopes
+3. Copy your **API Key** (`xbk_live_...`)
+
+> No Location ID is required. The app automatically discovers your ordering-enabled branches at runtime.
+
+## Enable Ordering Per Branch
+
+In the **Xeboki Manager app**: go to **Locations → Edit branch → Online Ordering** and toggle it on for each branch that accepts online orders.
+
+- **1 branch enabled** → app starts directly, no picker shown
+- **2+ branches enabled** → customer sees a branch picker screen on first launch
+- **0 branches enabled** → app shows a "not available" screen until you enable at least one
 
 > Your API key is tied to your subscription. Only paid accounts with Ordering App access can use the developer API.
 
@@ -145,7 +155,6 @@ After running `setup.sh`, a `.dart_defines.json` file is created at the project 
 ```json
 {
   "XEBOKI_API_KEY": "xbk_live_...",
-  "XEBOKI_LOCATION_ID": "your_location_id",
   "XEBOKI_ENV": "production"
 }
 ```

@@ -1,23 +1,19 @@
 /// Build-time configuration injected via --dart-define.
 ///
 /// Build command:
-///   flutter build apk \
-///     --dart-define=XEBOKI_API_KEY=xbk_live_... \
-///     --dart-define=XEBOKI_LOCATION_ID=loc_abc
+///   flutter build apk --dart-define=XEBOKI_API_KEY=xbk_live_...
+///
+/// No location ID is needed at build time. The app calls GET /v1/pos/locations
+/// at runtime to discover which branches have online ordering enabled. The
+/// merchant controls this from the Manager app per-location toggle.
 ///
 /// The API base URL is an SDK internal concern — never set it here.
-/// For development, create a run configuration with the two dart-defines above.
 class AppConfig {
   AppConfig._();
 
   // ── Xeboki credentials ────────────────────────────────────────────────────
   static const String apiKey = String.fromEnvironment(
     'XEBOKI_API_KEY',
-    defaultValue: '',
-  );
-
-  static const String locationId = String.fromEnvironment(
-    'XEBOKI_LOCATION_ID',
     defaultValue: '',
   );
 
@@ -29,17 +25,16 @@ class AppConfig {
       'production';
 
   // ── Validation ──────────────────────────────────────────────────────────────
-  static bool get isConfigured =>
-      apiKey.isNotEmpty && locationId.isNotEmpty;
+  static bool get isConfigured => apiKey.isNotEmpty;
 
   static void assertConfigured() {
     assert(
       isConfigured,
       '\n\n'
       '════════════════════════════════════════════════════════\n'
-      '  XEBOKI_API_KEY and XEBOKI_LOCATION_ID are required.\n'
-      '  Add --dart-define flags to your build/run command.\n'
-      '  See .env.example for details.\n'
+      '  XEBOKI_API_KEY is required.\n'
+      '  Add --dart-define=XEBOKI_API_KEY=xbk_live_... to your\n'
+      '  build/run command, or use setup.sh.\n'
       '════════════════════════════════════════════════════════\n',
     );
   }
