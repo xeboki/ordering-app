@@ -131,7 +131,9 @@ class AuthNotifier extends StateNotifier<CustomerAuth?> {
   Future<void> refresh() async {
     final current = state;
     if (current == null) return;
-    final updated = await _client.getCustomer(current.customer.id);
+    // Read customer profile directly from Firestore — no API hop needed
+    final updated = await FirestoreService.instance
+        .getCustomer(current.customer.id);
     if (updated != null) {
       final auth = CustomerAuth(customer: updated, token: current.token);
       await _persist(auth);

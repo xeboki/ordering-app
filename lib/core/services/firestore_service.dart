@@ -74,14 +74,142 @@ class FirestoreService {
     await auth.signOut();
   }
 
-  // ── Firestore order streaming ─────────────────────────────────────────────
+  // ── Catalog ───────────────────────────────────────────────────────────────
 
-  /// Real-time stream of an order document. Emits the raw Firestore data map.
-  /// Returns null when the document doesn't exist yet.
+  /// All active categories ordered by sortOrder.
+  Future<List<OrderingCategory>> getCategories({String? locationId}) async {
+    Query<Map<String, dynamic>> q = firestore
+        .collection('categories')
+        .where('is_active', isEqualTo: true)
+        .orderBy('sort_order');
+    if (locationId != null) {
+      q = q.where('location_id', isEqualTo: locationId);
+    }
+    final snap = await q.get();
+    return snap.docs
+        .map((d) => OrderingCategory.fromJson({...d.data(), 'id': d.id}))
+        .toList();
+  }
+
+  /// Paginated products, optionally filtered by category and/or search term.
+  Future<List<OrderingProduct>> getProducts({
+    String? categoryId,
+    String? search,
+    String? locationId,
+    int limit = 40,
+    DocumentSnapshot? startAfter,
+  }) async {
+    Query<Map<String, dynamic>> q = firestore
+        .collection('products')
+        .where('is_active', isEqualTo: true)
+        .orderBy('name')
+        .limit(limit);
+    if (categoryId != null) {
+      q = q.where('category_id', isEqualTo: categoryId);
+    }
+    if (locationId != null) {
+      q = q.where('location_id', isEqualTo: locationId);
+    }
+    if (startAfter != null) q = q.startAfterDocument(startAfter);
+
+    final snap = await q.get();
+    var products = snap.docs
+        .map((d) => OrderingProduct.fromJson({...d.data(), 'id': d.id}))
+        .toList();
+
+    // Client-side search filter (Firestore doesn't support full-text)
+    if (search != null && search.trim().isNotEmpty) {
+      final lower = search.trim().toLowerCase();
+      products = products
+          .where((p) =>
+              p.name.toLowerCase().contains(lower) ||
+              (p.description?.toLowerCase().contains(lower) ?? false))
+          .toList();
+    }
+    return products;
+  }
+
+  /// Single product by document ID.
+  Future<OrderingProduct?> getProduct(String id) async {
+    final doc = await firestore.collection('products').doc(id).get();
+    if (!doc.exists) return null;
+    return OrderingProduct.fromJson({...doc.data()!, 'id': doc.id});
+  }
+
+  // ── Orders ────────────────────────────────────────────────────────────────
+
+  /// Real-time stream of a single order document.
   Stream<Map<String, dynamic>?> orderStream(String orderId) {
     return firestore.collection('orders').doc(orderId).snapshots().map(
       (snap) => snap.exists ? snap.data() : null,
     );
+  }
+
+  /// Fetch a customer's order history, newest first.
+  Future<List<OrderingOrder>> getOrders({
+    String? customerId,
+    String? status,
+    int limit = 20,
+  }) async {
+    Query<Map<String, dynamic>> q = firestore
+        .collection('orders')
+        .orderBy('created_at', descending: true)
+        .limit(limit);
+    if (customerId != null) {
+      q = q.where('customer_id', isEqualTo: customerId);
+    }
+    if (status != null) {
+      q = q.where('status', isEqualTo: status);
+    }
+    final snap = await q.get();
+    return snap.docs
+        .map((d) => OrderingOrder.fromJson({...d.data(), 'id': d.id}))
+        .toList();
+  }
+
+  /// Fetch a single order by ID.
+  Future<OrderingOrder?> getOrder(String id) async {
+    final doc = await firestore.collection('orders').doc(id).get();
+    if (!doc.exists) return null;
+    return OrderingOrder.fromJson({...doc.data()!, 'id': doc.id});
+  }
+
+  /// Real-time stream of a customer's active orders.
+  Stream<List<OrderingOrder>> watchActiveOrders(String customerId) {
+    return firestore
+        .collection('orders')
+        .where('customer_id', isEqualTo: customerId)
+        .where('status', whereIn: ['pending', 'confirmed', 'preparing', 'ready'])
+        .orderBy('created_at', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => OrderingOrder.fromJson({...d.data(), 'id': d.id}))
+            .toList());
+  }
+
+  // ── Customers ─────────────────────────────────────────────────────────────
+
+  /// Fetch a customer document by ID.
+  Future<OrderingCustomer?> getCustomer(String id) async {
+    final doc = await firestore.collection('customers').doc(id).get();
+    if (!doc.exists) return null;
+    return OrderingCustomer.fromJson({...doc.data()!, 'id': doc.id});
+  }
+
+  // ── Discounts ─────────────────────────────────────────────────────────────
+
+  /// Look up an active discount by code.
+  /// Returns null when the code doesn't exist or is inactive.
+  Future<Map<String, dynamic>?> getDiscount(String code) async {
+    final snap = await firestore
+        .collection('discounts')
+        .where('code', isEqualTo: code.toUpperCase())
+        .where('is_active', isEqualTo: true)
+        .limit(1)
+        .get();
+    if (snap.docs.isEmpty) return null;
+    final d = snap.docs.first;
+    return {...d.data(), 'id': d.id};
   }
 
   // ── FCM ───────────────────────────────────────────────────────────────────

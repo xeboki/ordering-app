@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:xeboki_ordering/core/config/brand_config.dart';
 import 'package:xeboki_ordering/core/services/firestore_service.dart';
-import 'package:xeboki_ordering/core/types.dart';
 import 'app_providers.dart';
 import 'auth_providers.dart';
 

@@ -51,7 +51,11 @@ class OrderDetailScreen extends ConsumerWidget {
             ),
           ),
         ),
-        data: (order) => SingleChildScrollView(
+        data: (order) {
+          if (order == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -321,7 +325,8 @@ class OrderDetailScreen extends ConsumerWidget {
               ],
             ],
           ),
-        ),
+        );
+        },
       ),
     );
   }

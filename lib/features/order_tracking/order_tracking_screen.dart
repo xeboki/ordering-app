@@ -89,11 +89,16 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen>
       body: orderAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, __) => Center(child: Text(l10n.orderDetailCouldNotLoad)),
-        data: (order) => _TrackingBody(
-          order: order,
-          l10n: l10n,
-          pulseCtrl: _pulseCtrl,
-        ),
+        data: (order) {
+          if (order == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return _TrackingBody(
+            order: order,
+            l10n: l10n,
+            pulseCtrl: _pulseCtrl,
+          );
+        },
       ),
     );
   }

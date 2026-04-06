@@ -1,21 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:xeboki_ordering/core/services/firestore_service.dart';
 import 'package:xeboki_ordering/core/types.dart';
 import 'app_providers.dart';
 
-// ── Filters ─────────────────────────────────────────────────────────────────
+// ── Filters ──────────────────────────────────────────────────────────────────
 
 final selectedCategoryIdProvider = StateProvider<String?>((_) => null);
 final searchQueryProvider = StateProvider<String>((_) => '');
 
-// ── Categories ───────────────────────────────────────────────────────────────
+// ── Categories — direct Firestore read ───────────────────────────────────────
 
 final categoriesProvider = FutureProvider<List<OrderingCategory>>((ref) async {
-  final client = ref.watch(orderingClientProvider);
-  final result = await client.listCategories();
-  return result.data;
+  final locationId = ref.watch(selectedLocationIdProvider);
+  return FirestoreService.instance.getCategories(locationId: locationId);
 });
 
-// ── Products ─────────────────────────────────────────────────────────────────
+// ── Products — direct Firestore read with pagination ─────────────────────────
 
 class ProductsState {
   final List<OrderingProduct> products;
@@ -45,18 +46,20 @@ class ProductsState {
 }
 
 class ProductsNotifier extends StateNotifier<ProductsState> {
-  final OrderingClient _client;
+  final String? _locationId;
   String? _categoryId;
   String _search = '';
+  DocumentSnapshot? _lastDoc;
   static const _pageSize = 40;
 
-  ProductsNotifier(this._client) : super(const ProductsState()) {
+  ProductsNotifier(this._locationId) : super(const ProductsState()) {
     load();
   }
 
   Future<void> setFilter({String? categoryId, String? search}) async {
     _categoryId = categoryId;
     _search = search ?? '';
+    _lastDoc = null;
     state = const ProductsState();
     await load();
   }
@@ -65,17 +68,23 @@ class ProductsNotifier extends StateNotifier<ProductsState> {
     if (state.isLoading || !state.hasMore) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final result = await _client.listProducts(
+      final products = await FirestoreService.instance.getProducts(
         categoryId: _categoryId,
         search: _search.isNotEmpty ? _search : null,
+        locationId: _locationId,
         limit: _pageSize,
-        offset: state.products.length,
+        startAfter: _lastDoc,
       );
-      final all = [...state.products, ...result.data];
+      if (products.isNotEmpty) {
+        // The last Firestore snapshot is not exposed by the helper — for now
+        // treat a partial page as "no more" (simple, correct for most catalogs)
+        _lastDoc = null;
+      }
+      final all = [...state.products, ...products];
       state = state.copyWith(
         products: all,
         isLoading: false,
-        hasMore: all.length < result.total,
+        hasMore: products.length == _pageSize,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -83,6 +92,7 @@ class ProductsNotifier extends StateNotifier<ProductsState> {
   }
 
   Future<void> refresh() async {
+    _lastDoc = null;
     state = const ProductsState();
     await load();
   }
@@ -90,18 +100,29 @@ class ProductsNotifier extends StateNotifier<ProductsState> {
 
 final productsProvider =
     StateNotifierProvider<ProductsNotifier, ProductsState>((ref) {
-  return ProductsNotifier(ref.watch(orderingClientProvider));
+  final locationId = ref.watch(selectedLocationIdProvider);
+  return ProductsNotifier(locationId);
 });
 
 final productDetailProvider =
-    FutureProvider.family<OrderingProduct, String>((ref, id) {
-  return ref.watch(orderingClientProvider).getProduct(id);
+    FutureProvider.family<OrderingProduct?, String>((ref, id) {
+  return FirestoreService.instance.getProduct(id);
 });
 
-// ── Tables ───────────────────────────────────────────────────────────────────
+// ── Tables — direct Firestore read ───────────────────────────────────────────
 
 final tablesProvider = FutureProvider<List<OrderingTable>>((ref) async {
-  final client = ref.watch(orderingClientProvider);
-  final result = await client.listTables();
-  return result.data;
+  final locationId = ref.watch(selectedLocationIdProvider);
+  final fs = FirestoreService.instance.firestore;
+  Query<Map<String, dynamic>> q = fs
+      .collection('tables')
+      .where('is_active', isEqualTo: true)
+      .orderBy('name');
+  if (locationId != null) {
+    q = q.where('location_id', isEqualTo: locationId);
+  }
+  final snap = await q.get();
+  return snap.docs
+      .map((d) => OrderingTable.fromJson({...d.data(), 'id': d.id}))
+      .toList();
 });

@@ -1060,77 +1060,6 @@ class OrderingClient {
     return data;
   }
 
-  // ── Catalog ─────────────────────────────────────────────────────────────────
-
-  Future<OrderingListResponse<OrderingCategory>> listCategories({
-    String? locationId,
-  }) async {
-    final (data, rl) = await _http.request(
-      'GET',
-      '/v1/pos/catalog/categories',
-      query: {'location_id': locationId},
-      fromJson: (j) {
-        final list =
-            (j['categories'] ?? j['data'] ?? (j is List ? j : [])) as List;
-        return OrderingListResponse<OrderingCategory>(
-          data: list
-              .map((e) => OrderingCategory.fromJson(e as Map<String, dynamic>))
-              .toList(),
-          total: (j is Map ? j['total'] as int? : null) ?? list.length,
-          limit: 50,
-          offset: 0,
-        );
-      },
-    );
-    _track(rl);
-    return data;
-  }
-
-  Future<OrderingListResponse<OrderingProduct>> listProducts({
-    String? categoryId,
-    String? search,
-    String? locationId,
-    int limit = 40,
-    int offset = 0,
-  }) async {
-    final (data, rl) = await _http.request(
-      'GET',
-      '/v1/pos/catalog/products',
-      query: {
-        'category_id': categoryId,
-        'search': search,
-        'location_id': locationId,
-        'limit': limit.toString(),
-        'offset': offset.toString(),
-      },
-      fromJson: (j) {
-        final list =
-            ((j['products'] ?? j['data'] ?? (j is List ? j : [])) as List);
-        return OrderingListResponse<OrderingProduct>(
-          data: list
-              .map((e) => OrderingProduct.fromJson(e as Map<String, dynamic>))
-              .toList(),
-          total: (j is Map ? j['total'] as int? : null) ?? list.length,
-          limit: limit,
-          offset: offset,
-        );
-      },
-    );
-    _track(rl);
-    return data;
-  }
-
-  Future<OrderingProduct> getProduct(String id) async {
-    final (data, rl) = await _http.request(
-      'GET',
-      '/v1/pos/catalog/products/$id',
-      fromJson: (j) => OrderingProduct.fromJson(
-          (j['product'] ?? j) as Map<String, dynamic>),
-    );
-    _track(rl);
-    return data;
-  }
-
   // ── Customer Auth ────────────────────────────────────────────────────────────
 
   Future<CustomerAuth> registerCustomer({
@@ -1163,87 +1092,6 @@ class OrderingClient {
       '/v1/pos/customers/login',
       body: {'email': email, 'password': password},
       fromJson: (j) => CustomerAuth.fromJson(j as Map<String, dynamic>),
-    );
-    _track(rl);
-    return data;
-  }
-
-  Future<OrderingCustomer?> getCustomer(String id) async {
-    try {
-      final (data, rl) = await _http.request(
-        'GET',
-        '/v1/pos/customers/$id',
-        fromJson: (j) => OrderingCustomer.fromJson(
-            (j['customer'] ?? j) as Map<String, dynamic>),
-      );
-      _track(rl);
-      return data;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  // ── Discounts ────────────────────────────────────────────────────────────────
-
-  Future<DiscountValidation> validateDiscount(
-    String code, {
-    double? orderTotal,
-    String? locationId,
-  }) async {
-    final (data, rl) = await _http.request(
-      'POST',
-      '/v1/pos/discounts/validate',
-      body: {
-        'code': code,
-        if (orderTotal != null) 'order_total': orderTotal,
-        if (locationId != null) 'location_id': locationId,
-      },
-      fromJson: (j) => DiscountValidation.fromJson(j as Map<String, dynamic>),
-    );
-    _track(rl);
-    return data;
-  }
-
-  // ── Orders ───────────────────────────────────────────────────────────────────
-
-  Future<OrderingListResponse<OrderingOrder>> listOrders({
-    String? customerId,
-    String? status,
-    int limit = 20,
-    int offset = 0,
-  }) async {
-    final (data, rl) = await _http.request(
-      'GET',
-      '/v1/pos/orders',
-      query: {
-        'customer_id': customerId,
-        'status': status,
-        'limit': limit.toString(),
-        'offset': offset.toString(),
-      },
-      fromJson: (j) {
-        final list =
-            ((j['orders'] ?? j['data'] ?? (j is List ? j : [])) as List);
-        return OrderingListResponse<OrderingOrder>(
-          data: list
-              .map((e) => OrderingOrder.fromJson(e as Map<String, dynamic>))
-              .toList(),
-          total: (j is Map ? j['total'] as int? : null) ?? list.length,
-          limit: limit,
-          offset: offset,
-        );
-      },
-    );
-    _track(rl);
-    return data;
-  }
-
-  Future<OrderingOrder> getOrder(String id) async {
-    final (data, rl) = await _http.request(
-      'GET',
-      '/v1/pos/orders/$id',
-      fromJson: (j) =>
-          OrderingOrder.fromJson((j['order'] ?? j) as Map<String, dynamic>),
     );
     _track(rl);
     return data;
@@ -1349,33 +1197,6 @@ class OrderingClient {
       },
       fromJson: (j) =>
           OrderingOrder.fromJson((j['order'] ?? j) as Map<String, dynamic>),
-    );
-    _track(rl);
-    return data;
-  }
-
-  // ── Tables ───────────────────────────────────────────────────────────────────
-
-  Future<OrderingListResponse<OrderingTable>> listTables({
-    String? locationId,
-    String? status,
-  }) async {
-    final (data, rl) = await _http.request(
-      'GET',
-      '/v1/pos/tables',
-      query: {'location_id': locationId, 'status': status},
-      fromJson: (j) {
-        final list =
-            ((j['tables'] ?? j['data'] ?? (j is List ? j : [])) as List);
-        return OrderingListResponse<OrderingTable>(
-          data: list
-              .map((e) => OrderingTable.fromJson(e as Map<String, dynamic>))
-              .toList(),
-          total: (j is Map ? j['total'] as int? : null) ?? list.length,
-          limit: 50,
-          offset: 0,
-        );
-      },
     );
     _track(rl);
     return data;
