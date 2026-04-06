@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:xeboki_ordering/core/services/firestore_service.dart';
 import 'package:xeboki_ordering/core/types.dart';
 import 'app_providers.dart';
 import 'auth_providers.dart';
@@ -75,18 +75,44 @@ class CartNotifier extends StateNotifier<Cart> {
   void clear() => state = const Cart();
 
   Future<void> applyDiscount(String code) async {
-    final result = await _client.validateDiscount(
-      code,
-      orderTotal: state.subtotal,
-    );
-    if (result.valid && result.discountAmount != null) {
-      state = state.copyWith(
-        discountCode: code,
-        discountAmount: result.discountAmount!,
-      );
-    } else {
-      throw Exception(result.reason ?? 'Invalid discount code');
+    // Look up discount directly in Firestore — no API call needed
+    final data = await FirestoreService.instance.getDiscount(code);
+    if (data == null) throw Exception('Invalid or expired discount code');
+
+    final isActive = data['is_active'] as bool? ?? false;
+    if (!isActive) throw Exception('This discount code is no longer active');
+
+    // Check expiry
+    final expiresAt = data['expires_at'];
+    if (expiresAt != null) {
+      DateTime? expiry;
+      if (expiresAt is String) expiry = DateTime.tryParse(expiresAt);
+      if (expiresAt.runtimeType.toString().contains('Timestamp')) {
+        expiry = (expiresAt as dynamic).toDate() as DateTime;
+      }
+      if (expiry != null && expiry.isBefore(DateTime.now())) {
+        throw Exception('This discount code has expired');
+      }
     }
+
+    // Compute discount amount
+    final type = data['discount_type'] as String? ?? 'percentage';
+    final value = (data['value'] as num?)?.toDouble() ?? 0.0;
+    final minOrder = (data['min_order_amount'] as num?)?.toDouble() ?? 0.0;
+
+    if (state.subtotal < minOrder) {
+      throw Exception(
+          'Minimum order of ${minOrder.toStringAsFixed(2)} required for this code');
+    }
+
+    final amount = type == 'fixed'
+        ? value.clamp(0, state.subtotal)
+        : (state.subtotal * value / 100).clamp(0, state.subtotal);
+
+    state = state.copyWith(
+      discountCode: code.toUpperCase(),
+      discountAmount: amount.toDouble(),
+    );
   }
 
   void clearDiscount() {
