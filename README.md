@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Flutter-3.22+-02569B?logo=flutter" />
   <img src="https://img.shields.io/badge/Dart-3.4+-0175C2?logo=dart" />
   <img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web-lightgrey" />
-  <img src="https://img.shields.io/badge/License-Xeboki%20Subscriber-blue" />
+  <img src="https://img.shields.io/badge/License-Xeboki%20Subscriber-6366F1" />
 </p>
 
 ---
@@ -30,14 +30,16 @@ A fully-featured, white-label mobile ordering app that connects directly to your
 - Loyalty points — earn and redeem at checkout
 - Discount / promo codes
 - Order history and re-order
-- Appointments booking (salons, gyms, service businesses)
+- Appointment booking (salons, gyms, service businesses)
 
-**What you configure:**
-- Your logo, colours, and font — one JSON file
+**What you configure once, then manage remotely:**
+- App name, logo, colours, and font — set in `brand.json` once; update anytime from the Manager dashboard without rebuilding
 - Which order types and payment methods to offer
-- Your currency, tax label, and store details
-- Stripe keys if you accept card payments
-- Feature toggles for loyalty, tipping, dark mode, and more
+- Welcome screen headline, subtext, and call-to-action button text
+- Announcement bar (text and colour)
+- Menu layout (grid or list) and featured categories
+- Tipping, guest checkout, allergen display, calorie display
+- Social links (Instagram, Facebook, WhatsApp)
 
 ---
 
@@ -45,7 +47,7 @@ A fully-featured, white-label mobile ordering app that connects directly to your
 
 | | |
 |---|---|
-| **Xeboki POS subscription** | **Paid plan required.** Free plan accounts are blocked at app launch. Get a plan at [xeboki.com/xe-pos](https://xeboki.com/xe-pos) |
+| **Xeboki POS subscription** | **Paid plan required.** Free plan accounts are blocked at app launch — both client-side and server-side. Get a plan at [xeboki.com/xe-pos](https://xeboki.com/xe-pos) |
 | Flutter SDK | ≥ 3.22 — [install guide](https://docs.flutter.dev/get-started/install) |
 | Python 3 | Used by the setup wizard |
 | Xcode ≥ 15 | iOS builds only (macOS required) |
@@ -97,21 +99,19 @@ bash scripts/build.sh ios
 
 ## Enable Ordering Per Branch
 
-In the **Xeboki POS Admin**: go to **Locations → Edit branch → Online Ordering** and toggle it on for each branch that accepts online orders.
+In the **Xeboki POS Manager**: go to **Locations → Edit branch → Online Ordering** and toggle it on for each branch that accepts online orders.
 
 - **1 branch enabled** → app starts directly, no picker shown
 - **2+ branches enabled** → customer sees a branch picker screen on first launch
 - **0 branches enabled** → app shows a "not available" screen until you enable at least one
 
-> Your API key is tied to your subscription. Only paid accounts with Ordering App access can use the developer API.
-
 ---
 
 ## Configuration
 
-Visual branding lives in **`assets/brand.json`** — colours, font, logo, and feature toggles. That's all you set here.
+### Local branding — `assets/brand.json`
 
-**Business type, currency, timezone, tax label, and store details are auto-detected from your Xeboki POS at runtime.** The app fetches them from `GET /v1/pos/store-config` on every launch using your API key — no duplication, always in sync with what's configured in the POS.
+This file sets the baseline branding baked into the app at build time. You only need to edit it once during initial setup — all fields can be overridden remotely afterward without a redeploy (see [Remote Branding](#remote-branding--no-redeploy) below).
 
 ```json
 {
@@ -126,17 +126,74 @@ Visual branding lives in **`assets/brand.json`** — colours, font, logo, and fe
   "features": {
     "stripe_payments": true,
     "loyalty": true,
-    "tipping": false
+    "tipping": false,
+    "dark_mode": true,
+    "allergens": false,
+    "calories": false,
+    "guest_checkout": true
   },
 
   "checkout": {
     "allowed_order_types": ["pickup", "delivery"],
-    "payment_methods": ["cash", "card"]
+    "payment_methods": ["cash", "card"],
+    "tip_presets": [10, 15, 20],
+    "min_order_value": 5.00
+  },
+
+  "menu": {
+    "layout": "grid",
+    "show_category_images": true,
+    "featured_category_ids": []
+  },
+
+  "social": {
+    "instagram": "",
+    "facebook": "",
+    "whatsapp": ""
   }
 }
 ```
 
 See [`assets/brand.example.json`](assets/brand.example.json) for every available field with documentation.
+
+---
+
+## Remote Branding — No Redeploy
+
+After the initial build, all branding and configuration can be updated from the **Xeboki Manager dashboard** without rebuilding or resubmitting to the App Store.
+
+**How it works:**
+
+1. Open **Manager → Ordering App** in the Xeboki dashboard
+2. Edit any field — app name, tagline, colours, welcome screen text, menu layout, announcement bar, tipping presets, social links, etc.
+3. Click **Save** — changes are written to the Xeboki API instantly
+4. The next time a customer opens your app, the updated config is fetched from `GET /v1/pos/ordering-app-config` and applied automatically
+
+**What can be changed remotely without a rebuild:**
+
+| Section | Fields |
+|---------|--------|
+| Branding | App display name, tagline, logo URL, splash background colour, primary colour, secondary colour, font family |
+| Welcome Screen | Headline, subtext, CTA button text |
+| Menu & Catalog | Menu layout (grid/list), show category images, featured category IDs |
+| Promotions | Announcement bar text and colour |
+| Checkout | Guest checkout toggle, require phone, tip enabled, tip presets, minimum order value |
+| Social | Instagram, Facebook, WhatsApp links |
+| Accessibility | Show allergens, show calories |
+
+> Remote config is merged on top of `brand.json` at runtime. Fields not set in the dashboard fall back to `brand.json` values. **No App Store resubmission needed** for any of these changes.
+
+### Remote config flow
+
+```
+Manager Dashboard → PUT /v1/pos/ordering-app-config
+       ↓  (saves to Manager Firebase)
+App launches → GET /v1/pos/store-config
+       ↓  (returns ordering_app block alongside store config)
+BrandConfig.applyStoreConfig() merges remote values on top of brand.json
+       ↓
+UI rebuilds with latest branding — zero redeploy
+```
 
 ---
 
@@ -224,10 +281,14 @@ By default the app uses REST-based customer authentication. To switch to Firebas
 
 ## Subscription Gate
 
-The app validates your API key on every launch via `GET /v1/pos/validate`. Accounts that fail validation see a clear error screen and cannot proceed:
+Your API key and subscription are validated every time the app launches. **Both the app and the server enforce this** — the check cannot be bypassed through device-level manipulation or developer tools.
+
+**Client-side (app):** `GET /v1/pos/validate` is called at startup. If it fails, the user cannot proceed past the gate screen.
+
+**Server-side (API):** Every request to protected endpoints (`/ordering-app-config` and others) validates subscription claims embedded in the JWT. If a plan downgrade is detected — by comparing a timestamp embedded at login against the live `subscription_updated_at` value in the platform — the new plan takes effect immediately on the next API call. There is no delay between a subscription change and enforcement.
 
 | Status | Screen shown |
-|---|---|
+|--------|-------------|
 | Invalid API key | "Invalid API Key" — contact app owner |
 | No active subscription | "No Active Subscription" — link to upgrade |
 | Free plan | "Plan Upgrade Required" — link to upgrade |
@@ -247,20 +308,20 @@ ordering-app/
 ├── .vscode/launch.json          ← VS Code run configs
 │
 ├── assets/
-│   ├── brand.json               ← Your branding & features (edit this)
+│   ├── brand.json               ← Baseline branding (edit once; manage remotely after)
 │   ├── brand.example.json       ← Documented reference for every field
 │   └── images/logo.png          ← Replace with your logo
 │
 └── lib/
     ├── core/
     │   ├── config/
-    │   │   ├── app_config.dart  ← Build-time constants (do not edit)
-    │   │   └── brand_config.dart← Parses brand.json (do not edit)
-    │   ├── services/            ← Stripe, Firebase, FCM
-    │   └── types.dart           ← SDK client & all data models
-    ├── features/                ← Screens & widgets
-    ├── providers/               ← Riverpod state management
-    └── router/                  ← Navigation (GoRouter)
+    │   │   ├── app_config.dart       ← Build-time constants (do not edit)
+    │   │   └── brand_config.dart     ← Parses brand.json + merges remote ordering-app-config
+    │   ├── services/                 ← Stripe, Firebase, FCM
+    │   └── types.dart                ← SDK client, StoreConfig (with orderingApp block), models
+    ├── features/                     ← Screens & widgets
+    ├── providers/                    ← Riverpod state management
+    └── router/                       ← Navigation (GoRouter)
 ```
 
 ---
@@ -275,4 +336,5 @@ See **[SETUP.md](SETUP.md)** for the complete reference — every `brand.json` f
 
 - **Subscription & billing:** [xeboki.com/xe-pos](https://xeboki.com/xe-pos)
 - **Technical issues:** [Open an issue](https://github.com/xeboki/ordering-app/issues)
-- **POS Dashboard:** [pos.xeboki.com](https://pos.xeboki.com)
+- **POS Manager:** [pos.xeboki.com](https://pos.xeboki.com)
+- **Developer docs:** [docs.xeboki.com](https://docs.xeboki.com)
