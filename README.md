@@ -281,19 +281,7 @@ By default the app uses REST-based customer authentication. To switch to Firebas
 
 ## Subscription Gate
 
-Your API key and subscription are validated every time the app launches. **Both the app and the server enforce this** — the check cannot be bypassed through device-level manipulation or developer tools.
-
-**Client-side (app):** `GET /v1/pos/validate` is called at startup. If it fails, the user cannot proceed past the gate screen.
-
-**Server-side (API):** Every request to protected endpoints (`/ordering-app-config` and others) validates subscription claims embedded in the JWT. If a plan downgrade is detected — by comparing a timestamp embedded at login against the live `subscription_updated_at` value in the platform — the new plan takes effect immediately on the next API call. There is no delay between a subscription change and enforcement.
-
-| Status | Screen shown |
-|--------|-------------|
-| Invalid API key | "Invalid API Key" — contact app owner |
-| No active subscription | "No Active Subscription" — link to upgrade |
-| Free plan | "Plan Upgrade Required" — link to upgrade |
-| Feature not in plan | "Feature Not Included" — link to upgrade |
-| Network error | "Connection Error" — retry button |
+Your API key and subscription are validated every time the app launches. The check is enforced both in the app and on the server — it cannot be bypassed through device-level manipulation or developer tools. Plan changes take effect immediately with no delay.
 
 ---
 
