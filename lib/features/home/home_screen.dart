@@ -60,8 +60,30 @@ class HomeScreen extends ConsumerWidget {
     int currentIndex = tabs.indexWhere((t) => t.path == location);
     if (currentIndex < 0) currentIndex = 0;
 
+    final isTestMode = ref.watch(storeConfigProvider).valueOrNull?.isTestMode ?? false;
+
     return Scaffold(
-      body: child,
+      body: Column(
+        children: [
+          if (isTestMode)
+            Container(
+              width: double.infinity,
+              color: const Color(0xFFF59E0B),
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+              child: const Text(
+                '⚠ TEST MODE — No real payments are processed',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          Expanded(child: child),
+        ],
+      ),
       // Cart FAB — shown when items in cart and not on cart/checkout pages
       floatingActionButton: cartCount > 0 &&
               location != '/cart' &&
