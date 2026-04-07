@@ -18,6 +18,18 @@ class BrandConfig {
     required this.features,
     required this.checkout,
     required this.social,
+    this.logoUrl = '',
+    this.welcomeHeadline = '',
+    this.welcomeSubtext = '',
+    this.ctaButtonText = 'Order Now',
+    this.menuLayout = 'grid',
+    this.showCategoryImages = true,
+    this.announcementBarText = '',
+    this.announcementBarColor = '',
+    this.guestCheckout = true,
+    this.requirePhone = false,
+    this.showAllergens = false,
+    this.showCalories = false,
   });
 
   final String appName;
@@ -31,6 +43,23 @@ class BrandConfig {
   final BrandFeatures features;
   final BrandCheckout checkout;
   final BrandSocial social;
+
+  // ── Ordering App CMS fields (merged from API at startup) ─────────────────
+  /// Remote logo URL. Empty string means use the local asset logo.
+  final String logoUrl;
+  final String welcomeHeadline;
+  final String welcomeSubtext;
+  final String ctaButtonText;
+  /// 'grid' | 'list'
+  final String menuLayout;
+  final bool showCategoryImages;
+  final String announcementBarText;
+  /// Hex color for the announcement bar background, e.g. '#2563EB'.
+  final String announcementBarColor;
+  final bool guestCheckout;
+  final bool requirePhone;
+  final bool showAllergens;
+  final bool showCalories;
 
   /// True for business types where meal deals / bundles are relevant.
   bool get isFoodBusiness {
@@ -70,6 +99,7 @@ class BrandConfig {
   static void applyStoreConfig(StoreConfig c) {
     final b = _instance;
     if (b == null) return;
+    final oa = c.orderingApp;
     _instance = BrandConfig(
       appName:      c.businessName.isNotEmpty ? c.businessName : b.appName,
       tagline:      b.tagline,
@@ -92,10 +122,30 @@ class BrandConfig {
       features:  b.features,
       checkout:  b.checkout,
       social:    b.social,
+      // ── Ordering App CMS overrides ──────────────────────────────────────
+      logoUrl:              _str(oa['logo_url'], b.logoUrl),
+      welcomeHeadline:      _str(oa['welcome_headline'], b.welcomeHeadline),
+      welcomeSubtext:       _str(oa['welcome_subtext'], b.welcomeSubtext),
+      ctaButtonText:        _str(oa['cta_button_text'], b.ctaButtonText),
+      menuLayout:           _str(oa['menu_layout'], b.menuLayout),
+      showCategoryImages:   oa['show_category_images'] as bool? ?? b.showCategoryImages,
+      announcementBarText:  _str(oa['announcement_bar_text'], b.announcementBarText),
+      announcementBarColor: _str(oa['announcement_bar_color'], b.announcementBarColor),
+      guestCheckout:        oa['guest_checkout'] as bool? ?? b.guestCheckout,
+      requirePhone:         oa['require_phone'] as bool? ?? b.requirePhone,
+      showAllergens:        oa['show_allergens'] as bool? ?? b.showAllergens,
+      showCalories:         oa['show_calories'] as bool? ?? b.showCalories,
     );
   }
 
+  /// Returns [api] when non-null and non-empty, otherwise [fallback].
+  static String _str(dynamic api, String fallback) {
+    final s = api?.toString() ?? '';
+    return s.isNotEmpty ? s : fallback;
+  }
+
   factory BrandConfig._fromJson(Map<String, dynamic> j) {
+    final oa = j['ordering_app'] as Map<String, dynamic>? ?? {};
     return BrandConfig(
       appName: j['app_name'] as String? ?? 'My Store',
       tagline: j['tagline'] as String? ?? '',
@@ -108,6 +158,18 @@ class BrandConfig {
       features: BrandFeatures._fromJson(j['features'] as Map<String, dynamic>? ?? {}),
       checkout: BrandCheckout._fromJson(j['checkout'] as Map<String, dynamic>? ?? {}),
       social: BrandSocial._fromJson(j['social'] as Map<String, dynamic>? ?? {}),
+      logoUrl:              oa['logo_url'] as String? ?? '',
+      welcomeHeadline:      oa['welcome_headline'] as String? ?? '',
+      welcomeSubtext:       oa['welcome_subtext'] as String? ?? '',
+      ctaButtonText:        oa['cta_button_text'] as String? ?? 'Order Now',
+      menuLayout:           oa['menu_layout'] as String? ?? 'grid',
+      showCategoryImages:   oa['show_category_images'] as bool? ?? true,
+      announcementBarText:  oa['announcement_bar_text'] as String? ?? '',
+      announcementBarColor: oa['announcement_bar_color'] as String? ?? '',
+      guestCheckout:        oa['guest_checkout'] as bool? ?? true,
+      requirePhone:         oa['require_phone'] as bool? ?? false,
+      showAllergens:        oa['show_allergens'] as bool? ?? false,
+      showCalories:         oa['show_calories'] as bool? ?? false,
     );
   }
 }
