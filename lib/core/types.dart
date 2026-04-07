@@ -627,6 +627,9 @@ class StoreConfig {
   final String supportEmail;
   final String supportPhone;
   final String website;
+  /// Raw ordering_app config block returned by /store-config.
+  /// Passed to BrandConfig.applyStoreConfig for merging.
+  final Map<String, dynamic> orderingApp;
 
   const StoreConfig({
     required this.businessType,
@@ -639,6 +642,7 @@ class StoreConfig {
     required this.supportEmail,
     required this.supportPhone,
     required this.website,
+    this.orderingApp = const {},
   });
 
   factory StoreConfig.fromJson(Map<String, dynamic> j) => StoreConfig(
@@ -652,6 +656,7 @@ class StoreConfig {
         supportEmail:   j['support_email']?.toString() ?? '',
         supportPhone:   j['support_phone']?.toString() ?? '',
         website:        j['website']?.toString() ?? '',
+        orderingApp:    j['ordering_app'] as Map<String, dynamic>? ?? {},
       );
 }
 
