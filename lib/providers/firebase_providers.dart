@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:xeboki_ordering/core/config/brand_config.dart';
 import 'package:xeboki_ordering/core/services/firestore_service.dart';
@@ -58,12 +59,20 @@ final firebaseReadyProvider = Provider<bool>((ref) {
 /// Watch this provider in the root widget so it runs for the app's lifetime.
 /// It is a no-op when firebase_auth is disabled or no customer is signed in.
 final fcmRegistrationProvider = FutureProvider<void>((ref) async {
+  // firebase_messaging has no Windows/Linux plugin — skip silently.
+  if (!kIsWeb &&
+      defaultTargetPlatform != TargetPlatform.android &&
+      defaultTargetPlatform != TargetPlatform.iOS &&
+      defaultTargetPlatform != TargetPlatform.macOS) {
+    return;
+  }
+
   final ready = ref.watch(firebaseReadyProvider);
   final auth  = ref.watch(authProvider);
-  if (!ready || auth == null) return;
+  if (!ready || auth == null) { return; }
 
   final token = await FirestoreService.instance.getFcmToken();
-  if (token == null) return;
+  if (token == null) { return; }
 
   final client = ref.read(orderingClientProvider);
   await client.registerCustomerFcmToken(auth.customer.id, token);

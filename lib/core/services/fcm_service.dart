@@ -1,5 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:xeboki_ordering/core/services/firestore_service.dart';
 
 /// Top-level background message handler.
@@ -39,8 +39,11 @@ class FcmService {
     if (_initialised || !FirestoreService.instance.isInitialised) return;
     _initialised = true;
 
-    // Register background handler (must happen before any other FCM work)
-    FirebaseMessaging.onBackgroundMessage(fcmBackgroundHandler);
+    // Register background handler (must happen before any other FCM work).
+    // Web and macOS use service-worker / extension-based push — no isolate handler.
+    if (!kIsWeb && defaultTargetPlatform != TargetPlatform.macOS) {
+      FirebaseMessaging.onBackgroundMessage(fcmBackgroundHandler);
+    }
 
     // Request permission + fetch initial token
     _token = await FirestoreService.instance.getFcmToken();
