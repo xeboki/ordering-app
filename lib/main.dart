@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xeboki_ordering/l10n/app_localizations.dart';
@@ -14,40 +15,60 @@ import 'package:xeboki_ordering/providers/app_providers.dart';
 import 'package:xeboki_ordering/providers/firebase_providers.dart';
 import 'package:xeboki_ordering/router/app_router.dart';
 
+/// True when running on Android or iOS.
+bool get _isMobile =>
+    !kIsWeb &&
+    (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS);
+
+/// firebase_messaging is supported on mobile + web + macOS.
+bool get _firebaseMessagingSupported =>
+    kIsWeb ||
+    defaultTargetPlatform == TargetPlatform.android ||
+    defaultTargetPlatform == TargetPlatform.iOS ||
+    defaultTargetPlatform == TargetPlatform.macOS;
+
+/// flutter_stripe is supported on mobile + web.
+bool get _stripeSupported =>
+    kIsWeb ||
+    defaultTargetPlatform == TargetPlatform.android ||
+    defaultTargetPlatform == TargetPlatform.iOS;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  AppConfig.assertConfigured();
-
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-
-  // Edge-to-edge on Android; transparent bars, content draws behind them
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarDividerColor: Colors.transparent,
-  ));
+  // Mobile-only: lock to portrait and configure system UI chrome.
+  // These APIs are no-ops or unsupported on web/desktop.
+  if (_isMobile) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    // Edge-to-edge on Android; transparent bars, content draws behind them
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+    ));
+  }
 
   final brand = await BrandConfig.load();
 
-  // Initialise Stripe if configured for this white-label build
-  StripeService.init();
+  // Stripe SDK is not available on Windows/Linux.
+  if (_stripeSupported) StripeService.init();
 
   // Pre-initialise Firebase Auth from the merchant's Pro Firebase config.
   // This is a background task — app boots normally while this completes.
   // The firebaseInitProvider watches it; auth falls back to REST until ready.
-  if (brand.features.firebaseAuth) {
+  // firebase_messaging has no Windows/Linux plugin — skip on those platforms.
+  if (brand.features.firebaseAuth && _firebaseMessagingSupported) {
     final client = OrderingClient(apiKey: AppConfig.apiKey);
     client.getFirebaseConfig().then((config) async {
       await FirestoreService.instance.init(config);
-      // Init FCM after Firebase is ready — background handler must be
-      // registered before any other FCM calls.
-      await FcmService.instance.init();
+      // FCM background handler requires a native isolate — mobile only.
+      if (_isMobile) await FcmService.instance.init();
       client.close();
     }).catchError((_) {}); // non-fatal — REST auth still works
   }

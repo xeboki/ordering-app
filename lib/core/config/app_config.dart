@@ -14,7 +14,7 @@ class AppConfig {
   // ── Xeboki credentials ────────────────────────────────────────────────────
   static const String apiKey = String.fromEnvironment(
     'XEBOKI_API_KEY',
-    defaultValue: '',
+    defaultValue: 'xbk_live_7P9KFhYwmG0Hym2CN4ITgRYNd9DULiNfIEnJ8bLHsx4',
   );
 
   // ── Environment ─────────────────────────────────────────────────────────────
