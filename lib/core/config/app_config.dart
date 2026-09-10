@@ -12,9 +12,16 @@ class AppConfig {
   AppConfig._();
 
   // ── Xeboki credentials ────────────────────────────────────────────────────
+  // SECURITY: never ship a live key as a default — a value baked into the app
+  // binary is extractable from the APK/IPA and lets anyone call the API as the
+  // merchant. Injected at build time only; empty otherwise (assertConfigured
+  // fails fast). The exposed default that used to live here
+  // (xbk_live_7P9K…) must be REVOKED/rotated. Under the new architecture the
+  // app talks to the BFF with a Firebase user token and holds no xbk_ key at
+  // all — this field goes away once that migration lands.
   static const String apiKey = String.fromEnvironment(
     'XEBOKI_API_KEY',
-    defaultValue: 'xbk_live_7P9KFhYwmG0Hym2CN4ITgRYNd9DULiNfIEnJ8bLHsx4',
+    defaultValue: '',
   );
 
   // ── Environment ─────────────────────────────────────────────────────────────
